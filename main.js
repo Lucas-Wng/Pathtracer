@@ -65,7 +65,7 @@ async function main() {
     gl.viewport(0, 0, canvas.width, canvas.height);
 
     const vertSrc = await loadText("shaders/vertQuad.glsl");
-    const fragSrc = await loadText("shaders/fragRaytrace.glsl");
+    const fragSrc = await loadText("shaders/fragPathtrace.glsl");
     const programInfo = twgl.createProgramInfo(gl, [vertSrc, fragSrc]);
 
     createFullscreenQuad(gl);
