@@ -46,7 +46,7 @@ struct Hit {
 #define NUM_SPHERES 2
 #define NUM_BOXES 7
 #define MAX_BOUNCES 16
-#define MAX_SAMPLES_PER_PIXEL 512
+#define MAX_SAMPLES_PER_PIXEL 1024
 #define MAT_DIFFUSE 0
 #define MAT_MIRROR 1
 #define MAT_GLASS 2
@@ -93,7 +93,7 @@ void cameraRay(vec2 p, out vec3 ro, out vec3 rd) {
 bool intersectSphere(vec3 ro, vec3 rd, Sphere s, out float tHit) {
     vec3 op = s.center - ro;
     float b = dot(op, rd);
-    float det = b*b - dot(op, op) + s.radius*s.radius;
+    float det = b * b - dot(op, op) + s.radius * s.radius;
     if (det < 0.0) return false;
 
     det = sqrt(det);
@@ -129,15 +129,20 @@ bool intersectBox(vec3 ro, vec3 rd, Box box, out float tHit, out vec3 normal) {
     const float eps = 1e-3;
     if (abs(hitPos.x - box.minCorner.x) < eps) {
         normal = vec3(-1.0, 0.0, 0.0);
-    } else if (abs(hitPos.x - box.maxCorner.x) < eps) {
+    }
+    else if (abs(hitPos.x - box.maxCorner.x) < eps) {
         normal = vec3(1.0, 0.0, 0.0);
-    } else if (abs(hitPos.y - box.minCorner.y) < eps) {
+    }
+    else if (abs(hitPos.y - box.minCorner.y) < eps) {
         normal = vec3(0.0, -1.0, 0.0);
-    } else if (abs(hitPos.y - box.maxCorner.y) < eps) {
+    }
+    else if (abs(hitPos.y - box.maxCorner.y) < eps) {
         normal = vec3(0.0, 1.0, 0.0);
-    } else if (abs(hitPos.z - box.minCorner.z) < eps) {
+    }
+    else if (abs(hitPos.z - box.minCorner.z) < eps) {
         normal = vec3(0.0, 0.0, -1.0);
-    } else {
+    }
+    else {
         normal = vec3(0.0, 0.0, 1.0);
     }
 
@@ -205,9 +210,6 @@ bool traceScene(vec3 ro, vec3 rd, out Hit hit) {
             tempHit.t = t;
             tempHit.position = ro + rd * t;
             tempHit.normal = normalize(tempHit.position - sphere.center);
-            if (dot(tempHit.normal, rd) > 0.0) {
-                tempHit.normal = -tempHit.normal;   // force outward-facing normal
-            }
             tempHit.albedo = sphere.albedo;
             tempHit.emission = sphere.emission;
             tempHit.material = sphere.material;
@@ -254,7 +256,7 @@ vec3 pathTrace(vec3 ro, vec3 rd) {
     vec3 radiance = vec3(0.0);
     vec3 throughput = vec3(1.0);
 
-    for (int bounce = 0; bounce < MAX_BOUNCES; ++bounce) {
+    for (int bounce = 0; bounce < MAX_BOUNCES; bounce++) {
         Hit hit;
         if (!traceScene(ro, rd, hit)) {
             radiance += throughput * environment(rd);
@@ -272,11 +274,13 @@ vec3 pathTrace(vec3 ro, vec3 rd) {
             throughput *= hit.albedo;
             ro = hit.position + hit.normal * 0.001;
             rd = cosineSampleHemisphere(hit.normal);
-        } else if (hit.material == MAT_MIRROR) {
+        }
+        else if (hit.material == MAT_MIRROR) {
             throughput *= hit.albedo;
             rd = reflect(rd, hit.normal);
             ro = hit.position + rd * 0.002;
-        } else if (hit.material == MAT_GLASS) {
+        }
+        else if (hit.material == MAT_GLASS) {
             float etai = 1.0;
             float etat = 1.5;
             vec3 normal = hit.normal;
@@ -296,7 +300,8 @@ vec3 pathTrace(vec3 ro, vec3 rd) {
             throughput *= hit.albedo;
             if (cannotRefract || randFloat() < reflectProb) {
                 rd = reflect(rd, normal);
-            } else {
+            }
+            else {
                 rd = normalize(refrDir);
             }
             ro = hit.position + rd * 0.002;
